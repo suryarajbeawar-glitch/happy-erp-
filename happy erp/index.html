@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy ERP Billing</title>
+  <link rel="stylesheet" href="styles.css?v=happy2">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <button class="sidebar-toggle" id="sidebarToggle" title="Collapse sidebar">☰</button>
+        <div class="brand-mark">HE</div>
+        <div>
+          <h1>Happy ERP</h1>
+          <span>Smart Retail Billing</span>
+        </div>
+      </div>
+      <nav class="nav-list" aria-label="Main navigation">
+        <button class="nav-item active" data-view="dashboard" data-short="DB">Dashboard</button>
+        <button class="nav-item" data-view="billing" data-short="POS">Billing</button>
+        <button class="nav-item" data-view="bills" data-short="BL">Bills</button>
+        <button class="nav-item" data-view="stock" data-short="ST">Stock</button>
+        <button class="nav-item" data-view="purchase" data-short="PU">Purchase</button>
+        <button class="nav-item" data-view="customers" data-short="CU">Customers</button>
+        <button class="nav-item" data-view="suppliers" data-short="SU">Suppliers</button>
+        <button class="nav-item" data-view="expenses" data-short="EX">Expenses</button>
+        <button class="nav-item" data-view="accounts" data-short="AC">Accounts</button>
+        <button class="nav-item" data-view="reports" data-short="RP">Reports</button>
+        <button class="nav-item" data-view="users" data-short="US">Users</button>
+        <button class="nav-item" data-view="backup" data-short="BK">Backup</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Happy ERP Billing Suite</p>
+          <h2 id="pageTitle">Dashboard</h2>
+        </div>
+        <div class="top-actions">
+          <button class="icon-button" id="themeToggle" title="Toggle dark mode">◐</button>
+          <button class="primary-action" data-view-target="billing">New Bill</button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="view active">
+        <div class="summary-grid" id="dashboardCards"></div>
+        <div class="chart-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Daily Sales</h3>
+              <span>Last 7 days</span>
+            </div>
+            <canvas id="dailySalesChart" height="190"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Monthly Sales</h3>
+              <span>This year</span>
+            </div>
+            <canvas id="monthlySalesChart" height="190"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Payment Modes</h3>
+              <span>Collections</span>
+            </div>
+            <canvas id="paymentChart" height="190"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Profit</h3>
+              <span>Monthly margin</span>
+            </div>
+            <canvas id="profitChart" height="190"></canvas>
+          </article>
+          <article class="panel wide-panel">
+            <div class="panel-head">
+              <h3>Sales vs Purchase</h3>
+              <span>Business movement</span>
+            </div>
+            <canvas id="salesPurchaseChart" height="210"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>GST Summary</h3>
+              <span>Output and input tax</span>
+            </div>
+            <canvas id="gstChart" height="210"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <section id="billing" class="view">
+        <div class="billing-layout">
+          <article class="panel billing-counter">
+            <div class="panel-head pos-head">
+              <div>
+                <h3>POS Counter</h3>
+                <span>Fast billing with live product search</span>
+              </div>
+              <span id="billNoLabel"></span>
+            </div>
+            <div class="pos-metrics" id="posMetrics"></div>
+            <div class="form-grid compact">
+              <label>Barcode
+                <input id="barcodeInput" type="text" placeholder="Scan or type barcode">
+              </label>
+              <label>Search Product
+                <input id="productSearch" type="search" placeholder="Name, brand, size, color">
+              </label>
+              <label>Customer
+                <select id="billCustomer"></select>
+              </label>
+              <label>Notes
+                <input id="billNotes" type="text" placeholder="Optional note">
+              </label>
+            </div>
+            <div class="product-suggestions" id="productSuggestions"></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Disc</th>
+                    <th>GST</th>
+                    <th>Total</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="billItems"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <aside class="panel bill-total">
+            <h3>Bill Summary</h3>
+            <label>Discount %
+              <input id="billDiscountPercent" type="number" value="0" min="0">
+            </label>
+            <label>Discount Amount
+              <input id="billDiscountAmount" type="number" value="0" min="0">
+            </label>
+            <label>GST %
+              <input id="billGst" type="number" value="0" min="0">
+            </label>
+            <label>Extra Charges
+              <input id="billExtra" type="number" value="0" min="0">
+            </label>
+            <label class="check-row">
+              <input id="billRoundOff" type="checkbox" checked>
+              Round off
+            </label>
+            <div class="amount-lines" id="amountLines"></div>
+            <div class="payment-box">
+              <h4>Payment</h4>
+              <label>Cash <input id="payCash" type="number" min="0" value="0"></label>
+              <label>UPI <input id="payUpi" type="number" min="0" value="0"></label>
+              <label>Bank <input id="payBank" type="number" min="0" value="0"></label>
+              <label>Card <input id="payCard" type="number" min="0" value="0"></label>
+              <label>Credit Note <input id="payCreditNote" type="number" min="0" value="0"></label>
+              <label>Sales Return <input id="paySalesReturn" type="number" min="0" value="0"></label>
+              <label>Credit <input id="payCredit" type="number" min="0" value="0"></label>
+            </div>
+            <button class="primary-action full" id="saveBillBtn">Save Bill</button>
+          </aside>
+        </div>
+      </section>
+
+      <section id="bills" class="view">
+        <article class="panel">
+          <div class="panel-head">
+            <h3>Bill History</h3>
+            <div class="filters">
+              <input id="billFilter" type="search" placeholder="Search bill, customer, product, payment">
+              <input id="billDateFilter" type="date">
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bill No</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Payment</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="billHistory"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section id="stock" class="view">
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Add Product</h3>
+              <span>Variants, barcode and GST</span>
+            </div>
+            <form id="productForm" class="form-grid">
+              <input type="hidden" id="productId">
+              <label>Product Name <input id="productName" required></label>
+              <label>Category <select id="productCategory"></select></label>
+              <label>Brand <input id="productBrand" required></label>
+              <label>Size <select id="productSize"></select></label>
+              <label>Color <input id="productColor" required></label>
+              <label>Barcode <input id="productBarcode" required></label>
+              <label>Purchase Rate <input id="productPurchase" type="number" min="0" required></label>
+              <label>Sale Rate <input id="productSale" type="number" min="0" required></label>
+              <label>GST % <input id="productGst" type="number" min="0" value="5"></label>
+              <label>Opening Stock <input id="productStock" type="number" min="0" required></label>
+              <button class="primary-action" type="submit">Save Product</button>
+              <button class="secondary-action" type="button" id="resetProduct">Clear</button>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Current Stock</h3>
+              <input id="stockSearch" type="search" placeholder="Search stock">
+            </div>
+            <div class="stock-tabs">
+              <button class="chip active" data-stock-filter="all">All</button>
+              <button class="chip" data-stock-filter="low">Low</button>
+              <button class="chip" data-stock-filter="out">Out</button>
+              <button class="chip" data-stock-filter="dead">Dead</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Variant</th>
+                    <th>Barcode</th>
+                    <th>Stock</th>
+                    <th>Rate</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="stockTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="purchase" class="view">
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Purchase Entry</h3>
+              <span>Stock auto increase</span>
+            </div>
+            <form id="purchaseForm" class="form-grid">
+              <label>Supplier <select id="purchaseSupplier"></select></label>
+              <label>Invoice Number <input id="purchaseInvoice" required></label>
+              <label>Date <input id="purchaseDate" type="date" required></label>
+              <label>Product <select id="purchaseProduct"></select></label>
+              <label>Quantity <input id="purchaseQty" type="number" min="1" value="1"></label>
+              <label>Purchase Rate <input id="purchaseRate" type="number" min="0"></label>
+              <label>GST % <input id="purchaseGst" type="number" min="0" value="5"></label>
+              <button class="primary-action" type="submit">Save Purchase</button>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-head">
+              <h3>Purchase Register</h3>
+              <span id="purchaseTotalLabel"></span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Invoice</th><th>Date</th><th>Supplier</th><th>Product</th><th>Qty</th><th>Total</th></tr></thead>
+                <tbody id="purchaseTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="customers" class="view">
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head"><h3>Customer</h3><span>Ledger and outstanding</span></div>
+            <form id="customerForm" class="form-grid">
+              <input type="hidden" id="customerId">
+              <label>Name <input id="customerName" required></label>
+              <label>Mobile <input id="customerMobile" required></label>
+              <label>Address <input id="customerAddress"></label>
+              <button class="primary-action" type="submit">Save Customer</button>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h3>Customer Ledger</h3><input id="customerSearch" type="search" placeholder="Search customer"></div>
+            <div class="table-wrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>Purchases</th><th>Outstanding</th><th>Action</th></tr></thead><tbody id="customerTable"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="suppliers" class="view">
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head"><h3>Supplier</h3><span>Purchases and pending amount</span></div>
+            <form id="supplierForm" class="form-grid">
+              <input type="hidden" id="supplierId">
+              <label>Name <input id="supplierName" required></label>
+              <label>Mobile <input id="supplierMobile" required></label>
+              <label>Address <input id="supplierAddress"></label>
+              <label>GST Number <input id="supplierGst"></label>
+              <button class="primary-action" type="submit">Save Supplier</button>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h3>Supplier Ledger</h3><input id="supplierSearch" type="search" placeholder="Search supplier"></div>
+            <div class="table-wrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>GST</th><th>Purchases</th><th>Pending</th><th>Action</th></tr></thead><tbody id="supplierTable"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="expenses" class="view">
+        <div class="split-layout">
+          <article class="panel">
+            <div class="panel-head"><h3>Add Expense</h3><span>Daily and monthly reports</span></div>
+            <form id="expenseForm" class="form-grid">
+              <label>Date <input id="expenseDate" type="date" required></label>
+              <label>Category <select id="expenseCategory"></select></label>
+              <label>Amount <input id="expenseAmount" type="number" min="0" required></label>
+              <label>Notes <input id="expenseNotes"></label>
+              <button class="primary-action" type="submit">Save Expense</button>
+            </form>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h3>Expense Register</h3><span id="expenseTotalLabel"></span></div>
+            <div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Notes</th><th>Amount</th></tr></thead><tbody id="expenseTable"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="accounts" class="view">
+        <div class="summary-grid account-grid" id="accountCards"></div>
+        <article class="panel">
+          <div class="panel-head"><h3>Auto Ledger</h3><span>Sales, purchase, expense and credit entries</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Account</th><th>Type</th><th>Ref</th><th>Amount</th></tr></thead><tbody id="ledgerTable"></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="reports" class="view">
+        <div class="report-tabs">
+          <button class="chip active" data-report-tab="salesReport">Sales</button>
+          <button class="chip" data-report-tab="purchaseReport">Purchase</button>
+          <button class="chip" data-report-tab="inventoryReport">Inventory</button>
+          <button class="chip" data-report-tab="accountsReport">Accounts</button>
+          <button class="chip" data-report-tab="gstReport">GST Returns</button>
+        </div>
+        <div class="report-grid">
+          <article class="panel">
+            <div class="panel-head"><h3>Daily Report</h3><input id="reportDate" type="date"></div>
+            <div id="dailyReport" class="report-list"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><h3>Monthly Report</h3><input id="reportMonth" type="month"></div>
+            <div id="monthlyReport" class="report-list"></div>
+          </article>
+        </div>
+        <div class="report-detail-grid">
+          <article class="panel report-panel active" id="salesReport">
+            <div class="panel-head"><h3>Sales Report</h3><span>Invoices, returns and credit notes</span></div>
+            <div id="salesReportList" class="report-list"></div>
+          </article>
+          <article class="panel report-panel" id="purchaseReport">
+            <div class="panel-head"><h3>Purchase Report</h3><span>Supplier register</span></div>
+            <div id="purchaseReportList" class="report-list"></div>
+          </article>
+          <article class="panel report-panel" id="inventoryReport">
+            <div class="panel-head"><h3>Inventory Report</h3><span>Stock health</span></div>
+            <div id="inventoryReportList" class="report-list"></div>
+          </article>
+          <article class="panel report-panel" id="accountsReport">
+            <div class="panel-head"><h3>Accounts Report</h3><span>Cash, bank and receivables</span></div>
+            <div id="accountsReportList" class="report-list"></div>
+          </article>
+          <article class="panel report-panel" id="gstReport">
+            <div class="panel-head"><h3>GST Returns</h3><span>GSTR style summary</span></div>
+            <div id="gstReportList" class="report-list"></div>
+          </article>
+        </div>
+        <div class="export-row">
+          <button class="secondary-action" id="exportReportCsv">Excel Export</button>
+          <button class="secondary-action" id="printReports">PDF / Print Export</button>
+        </div>
+      </section>
+
+      <section id="users" class="view">
+        <article class="panel">
+          <div class="panel-head"><h3>User Roles</h3><span>Owner, Manager and Staff permissions</span></div>
+          <div class="table-wrap"><table><thead><tr><th>User</th><th>Role</th><th>Billing</th><th>Edit Bill</th><th>Delete Bill</th><th>Reports</th><th>Stock</th></tr></thead><tbody id="userTable"></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="backup" class="view">
+        <article class="panel backup-panel">
+          <div class="panel-head"><h3>Backup System</h3><span>Export, import and restore local data</span></div>
+          <div class="backup-actions">
+            <button class="primary-action" id="exportData">Export Data</button>
+            <label class="file-button">Import Data<input id="importData" type="file" accept="application/json"></label>
+            <button class="secondary-action" id="exportProductsCsv">Excel Export</button>
+            <button class="secondary-action" id="googleDriveBackup">Google Drive Backup</button>
+          </div>
+          <p class="muted">Google Drive backup button prepares a local JSON file. Connect your own Drive API credentials for automatic cloud upload.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Mobile quick navigation">
+    <button class="nav-item active" data-view="dashboard">Home</button>
+    <button class="nav-item" data-view="billing">Bill</button>
+    <button class="nav-item" data-view="stock">Stock</button>
+    <button class="nav-item" data-view="reports">Reports</button>
+  </nav>
+
+  <dialog id="invoiceDialog">
+    <div class="dialog-head">
+      <h3>Invoice</h3>
+      <button class="icon-button" id="closeInvoice">×</button>
+    </div>
+    <div id="invoiceContent" class="invoice"></div>
+    <div class="dialog-actions">
+      <button class="secondary-action" id="printInvoice">Print / PDF</button>
+      <button class="secondary-action" id="downloadInvoice">Download HTML</button>
+      <button class="primary-action" id="whatsappInvoice">WhatsApp</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js?v=happy2"></script>
+</body>
+</html>
